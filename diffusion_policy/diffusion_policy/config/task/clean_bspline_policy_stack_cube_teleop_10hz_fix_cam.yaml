@@ -1,0 +1,67 @@
+name: clean_bspline_policy_stack_cube_teleop_10hz_fix_cam
+
+shape_meta: &shape_meta
+  obs:
+    head_image:
+      shape: [3, 84, 84]
+      type: rgb
+    left_image:
+      shape: [3, 84, 84]
+      type: rgb
+    right_image:
+      shape: [3, 84, 84]
+      type: rgb
+    left_arm_joint_position:
+      shape: [6]
+      type: low_dim
+    left_arm_pos:
+      shape: [3]
+      type: low_dim
+    left_arm_quat:
+      shape: [4]
+      type: low_dim
+    left_gripper_pos:
+      shape: [1]
+      type: low_dim
+    right_arm_joint_position:
+      shape: [6]
+      type: low_dim
+    right_arm_pos:
+      shape: [3]
+      type: low_dim
+    right_arm_quat:
+      shape: [4]
+      type: low_dim
+    right_gripper_pos:
+      shape: [1]
+      type: low_dim
+
+  action:
+    shape: [20]
+
+dataset_path: &dataset_path /mnt/robot-research-exp-0/user/hxs/simple_mobile_bsp/data/stack_cube_teleop_10hz_fix_cam_10hz.hdf5
+abs_action: &abs_action True
+
+env_runner:
+  _target_: diffusion_policy.env_runner.real_pusht_image_runner.RealPushTImageRunner
+
+dataset:
+  _target_: diffusion_policy.dataset.robomimic_replay_image_dataset.RobomimicReplayImageDataset
+  shape_meta: *shape_meta
+  dataset_path: *dataset_path
+  horizon: ${horizon}
+  pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
+  pad_after: ${eval:'${n_action_steps}-1'}
+  n_obs_steps: ${dataset_obs_steps}
+  abs_action: *abs_action
+  rotation_rep: 'rotation_6d'
+  use_legacy_normalizer: False
+  use_cache: True
+  cache_suffix: clean_bspline_policy_stack_cube_teleop_10hz_fix_cam_action20_rot6d
+  cache_decoded_replay: False
+  cache_preprocessed_samples: False
+  cache_preprocessed_device: cpu
+  cache_preprocessed_share_memory: False
+  cache_preprocessed_rgb_dtype: float32
+  seed: 42
+  val_ratio: 0.0

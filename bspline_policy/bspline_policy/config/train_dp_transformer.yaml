@@ -1,0 +1,113 @@
+defaults:
+  - _self_
+  - task: square_image_abs_bspline
+
+
+name: train_diffusion_transformer_hybrid_bspline
+_target_: diffusion_policy.workspace.train_diffusion_transformer_hybrid_workspace.TrainDiffusionTransformerHybridWorkspace
+
+task_name: ${task.name}
+shape_meta: ${task.shape_meta}
+exp_name: dp_bspline
+checkpoint:
+  save_last_ckpt: true
+  save_last_snapshot: false
+  topk:
+    monitor_key: train_loss
+    mode: min
+    k: 5
+    format_str: 'epoch={epoch:04d}-train_loss={train_loss:.3f}.ckpt'
+dataloader:
+  batch_size: 64
+  num_workers: 8
+  persistent_workers: true
+  pin_memory: true
+  prefetch_factor: 1
+  shuffle: true
+dataset_obs_steps: ${n_obs_steps}
+ema:
+  _target_: diffusion_policy.model.diffusion.ema_model.EMAModel
+  inv_gamma: 1.0
+  max_value: 0.9999
+  min_value: 0.0
+  power: 0.75
+  update_after_step: 0
+
+horizon: 16
+keypoint_visible_rate: 1.0
+logging:
+  project: diffusion_policy_debug
+  resume: True
+  mode: online
+  name: ${now:%Y.%m.%d-%H.%M.%S}_${name}_${task_name}
+  tags: ["${name}", "${task_name}", "${exp_name}"]
+  id: null
+  group: null
+n_action_steps: ${horizon}
+n_latency_steps: 0
+n_obs_steps: 2
+obs_as_cond: true
+optimizer:
+  betas:
+  - 0.9
+  - 0.95
+  learning_rate: 0.0001
+  obs_encoder_weight_decay: 1.0e-06
+  transformer_weight_decay: 0.001
+past_action_visible: false
+policy:
+  _target_: bspline_policy.policy.diffusion_transformer_bspline_image_policy.DiffusionTransformerBSplineImagePolicy
+  causal_attn: true
+  crop_shape:
+  - 76
+  - 76
+  eval_fixed_crop: true
+  horizon: ${horizon}
+  n_action_steps: ${n_action_steps}
+  n_cond_layers: 0
+  n_emb: 256
+  n_head: 4
+  n_layer: 8
+  n_obs_steps: ${n_obs_steps}
+  noise_scheduler:
+    _target_: diffusers.schedulers.scheduling_ddim.DDIMScheduler
+    beta_end: 0.02
+    beta_schedule: squaredcos_cap_v2
+    beta_start: 0.0001
+    clip_sample: true
+    num_train_timesteps: 100
+    prediction_type: epsilon
+    # variance_type: fixed_small
+  num_inference_steps: 10
+  obs_as_cond: true
+  obs_encoder_group_norm: true
+  p_drop_attn: 0.3
+  p_drop_emb: 0.0
+  shape_meta: ${task.shape_meta}
+  time_as_cond: true
+  bspline_degree: ${task.dataset.bspline_degree}
+
+training:
+  checkpoint_every: 50
+  debug: false
+  device: cuda
+  gradient_accumulate_every: 1
+  lr_scheduler: cosine
+  lr_warmup_steps: 1000
+  max_train_steps: null
+  max_val_steps: null
+  num_epochs: 1001
+  resume: true
+  rollout_every: 50
+  sample_every: 100
+  seed: 42
+  tqdm_interval_sec: 1.0
+  use_ema: true
+  val_every: 50
+val_dataloader:
+  batch_size: 64
+  num_workers: 8
+  persistent_workers: true
+  pin_memory: true
+  prefetch_factor: 1
+  shuffle: false

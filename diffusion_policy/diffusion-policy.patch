@@ -1,0 +1,216 @@
+diff --git a/diffusion_policy/common/normalize_util.py b/diffusion_policy/common/normalize_util.py
+index d6fc7b6..0fcc7f0 100644
+--- a/diffusion_policy/common/normalize_util.py
++++ b/diffusion_policy/common/normalize_util.py
+@@ -110,8 +110,8 @@ def robomimic_abs_action_normalizer_from_stat(stat, rotation_transformer):
+ def robomimic_abs_action_only_normalizer_from_stat(stat):
+     result = dict_apply_split(
+         stat, lambda x: {
+-            'pos': x[...,:3],
+-            'other': x[...,3:]
++            'pos': x[...,:6],
++            'other': x[...,6:]
+     })
+ 
+     def get_pos_param_info(stat, output_max=1, output_min=-1, range_eps=1e-7):
+diff --git a/diffusion_policy/config/task/square_image_abs.yaml b/diffusion_policy/config/task/square_image_abs.yaml
+index d27a916..53e735d 100644
+--- a/diffusion_policy/config/task/square_image_abs.yaml
++++ b/diffusion_policy/config/task/square_image_abs.yaml
+@@ -3,50 +3,29 @@ name: square_image
+ shape_meta: &shape_meta
+   # acceptable types: rgb, low_dim
+   obs:
+-    agentview_image:
++    base_image:
+       shape: [3, 84, 84]
+       type: rgb
+-    robot0_eye_in_hand_image:
++    wrist_image:
+       shape: [3, 84, 84]
+       type: rgb
+-    robot0_eef_pos:
++    base_pose:
+       shape: [3]
+       # type default: low_dim
+-    robot0_eef_quat:
++    arm_pos:
++      shape: [3]
++    arm_quat:
+       shape: [4]
+-    robot0_gripper_qpos:
+-      shape: [2]
++    gripper_pos:
++      shape: [1]
+   action: 
+-    shape: [10]
++    shape: [13]
+ 
+-task_name: &task_name square
+-dataset_type: &dataset_type ph
+-dataset_path: &dataset_path data/robomimic/datasets/${task.task_name}/${task.dataset_type}/image_abs.hdf5
++dataset_path: &dataset_path data/${task.name}.hdf5
+ abs_action: &abs_action True
+ 
+ env_runner:
+-  _target_: diffusion_policy.env_runner.robomimic_image_runner.RobomimicImageRunner
+-  dataset_path: *dataset_path
+-  shape_meta: *shape_meta
+-  # costs 1GB per env
+-  n_train: 6
+-  n_train_vis: 2
+-  train_start_idx: 0
+-  n_test: 50
+-  n_test_vis: 4
+-  test_start_seed: 100000
+-  # use python's eval function as resolver, single-quoted string as argument
+-  max_steps: ${eval:'500 if "${task.dataset_type}" == "mh" else 400'}
+-  n_obs_steps: ${n_obs_steps}
+-  n_action_steps: ${n_action_steps}
+-  render_obs_key: 'agentview_image'
+-  fps: 10
+-  crf: 22
+-  past_action: ${past_action_visible}
+-  abs_action: *abs_action
+-  tqdm_interval_sec: 1.0
+-  n_envs: 28
+-# evaluation at this config requires a 16 core 64GB instance.
++  _target_: diffusion_policy.env_runner.real_pusht_image_runner.RealPushTImageRunner
+ 
+ dataset:
+   _target_: diffusion_policy.dataset.robomimic_replay_image_dataset.RobomimicReplayImageDataset
+@@ -61,4 +40,4 @@ dataset:
+   use_legacy_normalizer: False
+   use_cache: True
+   seed: 42
+-  val_ratio: 0.02
++  val_ratio: 0.0
+diff --git a/diffusion_policy/config/train_diffusion_unet_real_hybrid_workspace.yaml b/diffusion_policy/config/train_diffusion_unet_real_hybrid_workspace.yaml
+index 5b32366..82c95b9 100644
+--- a/diffusion_policy/config/train_diffusion_unet_real_hybrid_workspace.yaml
++++ b/diffusion_policy/config/train_diffusion_unet_real_hybrid_workspace.yaml
+@@ -1,6 +1,6 @@
+ defaults:
+   - _self_
+-  - task: real_pusht_image
++  - task: square_image_abs
+ 
+ name: train_diffusion_unet_hybrid
+ _target_: diffusion_policy.workspace.train_diffusion_unet_hybrid_workspace.TrainDiffusionUnetHybridWorkspace
+@@ -39,10 +39,9 @@ policy:
+   horizon: ${horizon}
+   n_action_steps: ${eval:'${n_action_steps}+${n_latency_steps}'}
+   n_obs_steps: ${n_obs_steps}
+-  num_inference_steps: 8
++  num_inference_steps: 16
+   obs_as_global_cond: ${obs_as_global_cond}
+-  # crop_shape: [76, 76] # 84x84 90%
+-  crop_shape: [216, 288] # ch, cw 320x240 90%
++  crop_shape: [76, 76]
+   # crop_shape: null
+   diffusion_step_embed_dim: 128
+   down_dims: [256,512,1024]
+@@ -68,14 +67,14 @@ dataloader:
+   num_workers: 8
+   shuffle: True
+   pin_memory: True
+-  persistent_workers: True
++  persistent_workers: False
+ 
+ val_dataloader:
+   batch_size: 64
+   num_workers: 8
+   shuffle: False
+   pin_memory: True
+-  persistent_workers: True
++  persistent_workers: False
+ 
+ optimizer:
+   _target_: torch.optim.AdamW
+@@ -92,7 +91,7 @@ training:
+   # optimization
+   lr_scheduler: cosine
+   lr_warmup_steps: 500
+-  num_epochs: 600
++  num_epochs: 601
+   gradient_accumulate_every: 1
+   # EMA destroys performance when used with BatchNorm
+   # replace BatchNorm with GroupNorm.
+@@ -100,7 +99,7 @@ training:
+   # training loop control
+   # in epochs
+   rollout_every: 50
+-  checkpoint_every: 50
++  checkpoint_every: 100
+   val_every: 1
+   sample_every: 5
+   # steps per epoch
+@@ -122,7 +121,7 @@ checkpoint:
+   topk:
+     monitor_key: train_loss
+     mode: min
+-    k: 5
++    k: 10
+     format_str: 'epoch={epoch:04d}-train_loss={train_loss:.3f}.ckpt'
+   save_last_ckpt: True
+   save_last_snapshot: False
+diff --git a/diffusion_policy/dataset/robomimic_replay_image_dataset.py b/diffusion_policy/dataset/robomimic_replay_image_dataset.py
+index 2728e9e..a277d2d 100644
+--- a/diffusion_policy/dataset/robomimic_replay_image_dataset.py
++++ b/diffusion_policy/dataset/robomimic_replay_image_dataset.py
+@@ -23,7 +23,6 @@ from diffusion_policy.common.replay_buffer import ReplayBuffer
+ from diffusion_policy.common.sampler import SequenceSampler, get_val_mask
+ from diffusion_policy.common.normalize_util import (
+     robomimic_abs_action_only_normalizer_from_stat,
+-    robomimic_abs_action_only_dual_arm_normalizer_from_stat,
+     get_range_normalizer_from_stat,
+     get_image_range_normalizer,
+     get_identity_normalizer_from_stat,
+@@ -151,11 +150,7 @@ class RobomimicReplayImageDataset(BaseImageDataset):
+         # action
+         stat = array_to_stats(self.replay_buffer['action'])
+         if self.abs_action:
+-            if stat['mean'].shape[-1] > 10:
+-                # dual arm
+-                this_normalizer = robomimic_abs_action_only_dual_arm_normalizer_from_stat(stat)
+-            else:
+-                this_normalizer = robomimic_abs_action_only_normalizer_from_stat(stat)
++            this_normalizer = robomimic_abs_action_only_normalizer_from_stat(stat)
+             
+             if self.use_legacy_normalizer:
+                 this_normalizer = normalizer_from_stat(stat)
+@@ -175,6 +170,8 @@ class RobomimicReplayImageDataset(BaseImageDataset):
+                 this_normalizer = get_identity_normalizer_from_stat(stat)
+             elif key.endswith('qpos'):
+                 this_normalizer = get_range_normalizer_from_stat(stat)
++            elif key == 'base_pose':
++                this_normalizer = get_range_normalizer_from_stat(stat)
+             else:
+                 raise RuntimeError('unsupported')
+             normalizer[key] = this_normalizer
+@@ -223,22 +220,13 @@ class RobomimicReplayImageDataset(BaseImageDataset):
+ def _convert_actions(raw_actions, abs_action, rotation_transformer):
+     actions = raw_actions
+     if abs_action:
+-        is_dual_arm = False
+-        if raw_actions.shape[-1] == 14:
+-            # dual arm
+-            raw_actions = raw_actions.reshape(-1,2,7)
+-            is_dual_arm = True
+-
+-        pos = raw_actions[...,:3]
+-        rot = raw_actions[...,3:6]
+-        gripper = raw_actions[...,6:]
++        pos = raw_actions[...,:6]
++        rot = raw_actions[...,6:9]
++        gripper = raw_actions[...,9:]
+         rot = rotation_transformer.forward(rot)
+         raw_actions = np.concatenate([
+             pos, rot, gripper
+         ], axis=-1).astype(np.float32)
+-    
+-        if is_dual_arm:
+-            raw_actions = raw_actions.reshape(-1,20)
+         actions = raw_actions
+     return actions
+ 

@@ -1,0 +1,141 @@
+# YAM single-arm teleop demos (simple_mobile/yam_teleop/convert_to_robomimic_hdf5.py).
+# Obs keys + image size come straight from the converter:
+#   - wrist_image is resized to POLICY_IMAGE_(WIDTH|HEIGHT) = 84x84 and stored HWC.
+#   - arm_pos (3), arm_quat (4, xyzw), gripper_pos (1) are written raw per step.
+# Raw hdf5 action = arm_pos(3) + arm_quat->axis_angle(3) + gripper_pos(1) = 7.
+# RobomimicReplayImageDataset converts axis_angle->rotation_6d at load time
+# (RotationTransformer(from_rep='axis_angle', to_rep='rotation_6d')), so the
+# final action the model sees is arm_pos(3) + rot6d(6) + gripper(1) = 10.
+# NOTE: requires the single-arm variant of `_convert_actions` in
+# robomimic_replay_image_dataset.py (the active one is bimanual, 17 -> 23).
+name: yam-v1
+
+shape_meta: &shape_meta
+  # acceptable types: rgb, low_dim
+  obs:
+    wrist_image:
+      shape: [3, 84, 84]
+      type: rgb
+    arm_pos:
+      shape: [3]
+    arm_quat:
+      shape: [4]
+    gripper_pos:
+      shape: [1]
+
+  action:
+    shape: [10]
+
+dataset_path: &dataset_path data/${task.name}.hdf5
+abs_action: &abs_action True
+
+env_runner:
+  _target_: diffusion_policy.env_runner.real_pusht_image_runner.RealPushTImageRunner
+
+dataset:
+  _target_: diffusion_policy.dataset.robomimic_replay_image_dataset.RobomimicReplayImageDataset
+  shape_meta: *shape_meta
+  dataset_path: *dataset_path
+  horizon: ${horizon}
+  pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
+  pad_after: ${eval:'${n_action_steps}-1'}
+  n_obs_steps: ${dataset_obs_steps}
+  abs_action: *abs_action
+  rotation_rep: 'rotation_6d'
+  use_legacy_normalizer: False
+  use_cache: True
+  seed: 42
+  val_ratio: 0.0
+
+# name: real-v1
+#
+# shape_meta: &shape_meta
+#   # acceptable types: rgb, low_dim
+#   obs:
+#     head_image:
+#       shape: [3, 128, 128]
+#       type: rgb
+#     left_wrist_image:
+#       shape: [3, 128, 128]
+#       type: rgb
+#     right_wrist_image:
+#       shape: [3, 128, 128]
+#       type: rgb
+#     arm_pos_l:
+#       shape: [3]
+#     arm_quat_l:
+#       shape: [4]
+#     gripper_pos_l:
+#       shape: [1]
+#     arm_pos_r:
+#       shape: [3]
+#     arm_quat_r:
+#       shape: [4]
+#     gripper_pos_r:
+#       shape: [1]
+#
+#   action:
+#     shape: [23]
+#
+# dataset_path: &dataset_path data/${task.name}.hdf5
+# abs_action: &abs_action True
+#
+# env_runner:
+#   _target_: diffusion_policy.env_runner.real_pusht_image_runner.RealPushTImageRunner
+#
+# dataset:
+#   _target_: diffusion_policy.dataset.robomimic_replay_image_dataset.RobomimicReplayImageDataset
+#   shape_meta: *shape_meta
+#   dataset_path: *dataset_path
+#   horizon: ${horizon}
+#   pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
+#   pad_after: ${eval:'${n_action_steps}-1'}
+#   n_obs_steps: ${dataset_obs_steps}
+#   abs_action: *abs_action
+#   rotation_rep: 'rotation_6d'
+#   use_legacy_normalizer: False
+#   use_cache: True
+#   seed: 42
+#   val_ratio: 0.0
+
+# name: sim-v1
+
+# shape_meta: &shape_meta
+#   # acceptable types: rgb, low_dim
+#   obs:
+#     base_image:
+#       shape: [3, 128, 128]
+#       type: rgb
+#     wrist_image:
+#       shape: [3, 128, 128]
+#       type: rgb
+
+#     arm_pos:
+#       shape: [3]
+#     arm_quat:
+#       shape: [4]
+#     gripper_pos:
+#       shape: [1]
+#   action: 
+#     shape: [13]
+
+# dataset_path: &dataset_path data/${task.name}.hdf5
+# abs_action: &abs_action True
+
+# env_runner:
+#   _target_: diffusion_policy.env_runner.real_pusht_image_runner.RealPushTImageRunner
+
+# dataset:
+#   _target_: diffusion_policy.dataset.robomimic_replay_image_dataset.RobomimicReplayImageDataset
+#   shape_meta: *shape_meta
+#   dataset_path: *dataset_path
+#   horizon: ${horizon}
+#   pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
+#   pad_after: ${eval:'${n_action_steps}-1'}
+#   n_obs_steps: ${dataset_obs_steps}
+#   abs_action: *abs_action
+#   rotation_rep: 'rotation_6d'
+#   use_legacy_normalizer: False
+#   use_cache: True
+#   seed: 42
+#   val_ratio: 0.0

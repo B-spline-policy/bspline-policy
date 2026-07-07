@@ -1,0 +1,6 @@
+/data
+.vscode
+setup.sh
+cloudml/
+simple_mobile/yam_teleop/data
+.omc/

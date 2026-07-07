@@ -1,0 +1,2 @@
+index-url = "https://pypi.org/simple"
+no-build-isolation-package = ["egl-probe"]
