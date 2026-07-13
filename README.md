@@ -28,5 +28,13 @@ Official repository of **B-spline Policy: Fast Manipulation Policies via B-splin
 
 Please consider citing these papers if you find this tutorial helpful:
 ```bibtex
-tbd
+@misc{han2026bsplinepolicyacceleratingmanipulation,
+      title={B-spline Policy: Accelerating Manipulation Policies via B-spline Action Representations}, 
+      author={Xiaoshen Han and Haoyu Xiong and Haonan Chen and Chaoqi Liu and Antonio Torralba and Yuke Zhu and Yilun Du},
+      year={2026},
+      eprint={2607.09648},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2607.09648}, 
+}
 ```
