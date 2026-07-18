@@ -4,7 +4,16 @@
 Official repository of **B-spline Policy: Accelerating Manipulation Policies via B-spline Action Representations**.
 
 [[Project page]](https://b-spline-policy.github.io/)
+[[Paper]](https://arxiv.org/abs/2607.09648)
 
+
+[Xiaoshen Han*](https://xshan.site/),
+[Haoyu Xiong*](https://haoyuxiong.com),
+[Haonan Chen](https://haonan16.github.io/),
+[Chaoqi Liu](https://chaoqi-liu.com/),
+[Antonio Torralba](https://groups.csail.mit.edu/vision/torralbalab/),
+[Yuke Zhu](https://yzhu.io/),
+[Yilun Du](https://yilundu.github.io/)
 
 <p align="left">
   <img src="assets/bsp_fast.gif" width="320" alt="B-spline Policy teaser">
