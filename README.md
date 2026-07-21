@@ -8,11 +8,11 @@ Official repository of **B-spline Policy: Accelerating Manipulation Policies via
 
 
 [Xiaoshen Han*](https://xshan.site/),
-[Haoyu Xiong*](https://haoyuxiong.com),
+[Haoyu Xiong*](https://haoyu-x.github.io/),
 [Haonan Chen](https://haonan16.github.io/),
 [Chaoqi Liu](https://chaoqi-liu.com/),
 [Antonio Torralba](https://groups.csail.mit.edu/vision/torralbalab/),
-[Yuke Zhu](https://yzhu.io/),
+[Yuke Zhu](https://yukezhu.me/),
 [Yilun Du](https://yilundu.github.io/)
 
 <p align="left">
