@@ -7,13 +7,18 @@ Official repository of **B-spline Policy: Accelerating Manipulation Policies via
 [[Paper]](https://arxiv.org/abs/2607.09648)
 
 
-[Xiaoshen Han*](https://xshan.site/),
-[Haoyu Xiong*](https://haoyu-x.github.io/),
-[Haonan Chen](https://haonan16.github.io/),
-[Chaoqi Liu](https://chaoqi-liu.com/),
-[Antonio Torralba](https://groups.csail.mit.edu/vision/torralbalab/),
-[Yuke Zhu](https://yukezhu.me/),
-[Yilun Du](https://yilundu.github.io/)
+[Xiaoshen Han](https://xshan.site/)<sup>*</sup><sup>1</sup>,
+[Haoyu Xiong*](https://haoyu-x.github.io/)<sup>*</sup><sup>2</sup>,
+[Haonan Chen](https://haonan16.github.io/)<sup>1</sup>,
+[Chaoqi Liu](https://chaoqi-liu.com/)<sup>1</sup>,
+[Antonio Torralba](https://groups.csail.mit.edu/vision/torralbalab/)<sup>2</sup>,
+[Yuke Zhu](https://yukezhu.me/)<sup>3</sup>,
+[Yilun Du](https://yilundu.github.io/)<sup>1</sup>,
+
+<sup>1</sup>Harvard
+<sup>2</sup>MIT
+<sup>3</sup>UT Austin
+
 
 <p align="left">
   <img src="assets/bsp_fast.gif" width="320" alt="B-spline Policy teaser">
