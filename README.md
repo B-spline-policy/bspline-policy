@@ -7,8 +7,8 @@ Official repository of **B-spline Policy: Accelerating Manipulation Policies via
 [[Paper]](https://arxiv.org/abs/2607.09648)
 
 
-[Xiaoshen Han](https://xshan.site/)*<sup>1</sup>,
-[Haoyu Xiong](https://haoyu-x.github.io/)*<sup>2</sup>,
+[Xiaoshen Han](https://xshan.site/)<sup>*1</sup>,
+[Haoyu Xiong](https://haoyu-x.github.io/)<sup>*2</sup>,
 [Haonan Chen](https://haonan16.github.io/)<sup>1</sup>,
 [Chaoqi Liu](https://chaoqi-liu.com/)<sup>1</sup>,
 [Antonio Torralba](https://groups.csail.mit.edu/vision/torralbalab/)<sup>2</sup>,
