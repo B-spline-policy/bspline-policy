@@ -1,4 +1,4 @@
-<h1 align="center" style="font-size: 3em;">B-spline Policy: Accelerating Manipulation Policies via B-spline Action Representations
+<h1 align="center" style="font-size: 3em;">B-spline Policy
 </h1>
 
 Official repository of **B-spline Policy: Accelerating Manipulation Policies via B-spline Action Representations**.
